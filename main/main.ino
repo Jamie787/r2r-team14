@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
-// TEST 3
+#include <Servo.h>
+
 // Defines
 
 #define MAX_ARGS 16
@@ -9,6 +10,9 @@
 #define ROTATE_COMMAND "rotate"
 #define SENSOR_COMMAND "sensor"
 #define DRIVE_COMMAND "drive"
+#define CLAMP_COMMAND "clamp"
+
+#define checkCommand(command) strcmp(args[0], command) == 0
 
 // Globals and Constants
 
@@ -24,9 +28,10 @@ const int rightEcho = -1;
 
 
 // Servo
-const int clawServo = -1;
-const int pivotServo = -1;
-
+const int clawServoPin = -1;
+Servo clawServo;
+const int pivotServoPin = -1;
+Servo pivotServo;
 
 // Motors
 const int leftMotor = -1;
@@ -39,14 +44,15 @@ void setup() {
   Serial.begin(9600);
 
   // TODO: Add pinMode() for all of the pins once they're finalised
+  initialiseUltrasonic();
+  initialiseServo();
 }
 
 void loop() {
   if (Serial.available()) {
-    // Reads a line from the user and converts it to a C style string
-    // The string object should not be used as strtok() ruins the array
-    String inputString = Serial.readString();
-    char *input = const_cast<char *>(inputString.c_str());
+    char input[128];
+    memset(input, '\0', 128);
+    readString(input);
 
     // Read arguments
     char *args[MAX_ARGS];
@@ -56,29 +62,33 @@ void loop() {
 
 
     // Commands
-    if (strcmp(args[0], MOVE_COMMAND) == 0) {
-      int distance = atoi(args[1]);
-
-      moveDistance(distance);
-    } 
-    else if (strcmp(args[0], SENSOR_COMMAND) == 0) {
-      char sensorType = *args[1];
-
-      if (sensorType == 'u') {
-        checkUltrasonic();
+    if (checkCommand(MOVE_COMMAND)) {
+      if (args[1] != nullptr) {
+        int distance = atoi(args[1]);
+        moveDistance(distance);
       } else {
-        Serial.println("Invalid Sensor command");
+        Serial.println("Invalid command. No distance");
       }
+    } 
+    else if (checkCommand(SENSOR_COMMAND)) {
+      checkUltrasonic();
     }
-    else if (strcmp(args[0], ROTATE_COMMAND) == 0) {
+    else if (checkCommand(ROTATE_COMMAND)) {
     
     }
-    else if (strcmp(args[0], DRIVE_COMMAND) == 0) {
+    else if (checkCommand(DRIVE_COMMAND)) {
     
+    }
+    else if (checkCommand(CLAMP_COMMAND)) {
+      if (args[1] != nullptr) {
+        int angle = atoi(args[1]);
+        moveClaw(angle);
+      }
     }
     // If the user provides an invalid command
     else {
       Serial.println("Invalid command");
+      Serial.println(args[0]);
     }
   }
 }
@@ -88,6 +98,7 @@ void moveDistance(int distance) {
     Serial.print("Moving forward ");
   } else {
     Serial.print("Moving backward ");
+    distance *= -1;
   }
 
   Serial.print(distance);
@@ -117,4 +128,48 @@ float findDistance(int trigPin, int echoPin) {
   float distance = duration / 2 * 0.034;
 
   return distance;
+}
+
+void initialiseUltrasonic() {
+  pinMode(leftTrig, OUTPUT);
+  pinMode(leftEcho, INPUT);
+  pinMode(forwardTrig, OUTPUT);
+  pinMode(forwardEcho, INPUT);
+  pinMode(rightTrig, OUTPUT);
+  pinMode(rightEcho, INPUT);
+}
+
+void readString(char *string) {
+  delay(100);
+
+  int i;
+  for (i = 0; Serial.available(); i++) {
+    char c = Serial.read();
+    if (c != '\n') {
+      string[i]  = c;
+    }
+  }
+
+  string[i] = '\0';
+}
+
+void initialiseServo() {
+  clawServo.attach(clawServoPin);
+  pivotServo.attach(pivotServoPin);
+
+  // TODO: Figure out the difference between 180 and 360
+  // clawServo.write(0);
+  // pivotServo.write(0);
+}
+
+void moveClaw(int angle) {
+  if (angle >= 0 && angle <= 180) {
+    Serial.print("Clamp at ");
+    Serial.print(angle);
+    Serial.println(" degrees");
+
+    clawServo.write(angle);
+  } else {
+    Serial.println("Invalid angle");
+  }
 }
