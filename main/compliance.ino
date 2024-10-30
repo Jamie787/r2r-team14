@@ -17,7 +17,7 @@
 #define MOTOR_BACKWARD "b"
 #define MOTOR_LEFT "l"
 #define MOTOR_RIGHT "r"
-#define STOP "s"
+#define MOTOR_STOP "s"
 
 #define SERVO_UP "U"
 #define SERVO_DOWN "D"
@@ -37,7 +37,7 @@ const int leftMotorLogicPin1 = -1;
 const int leftMotorLogicPin2 = -1; 
 
 int speed = 0;
-char direction = STOP;
+char direction = MOTOR_STOP;
 long duration;
 int distance;
 
@@ -70,9 +70,9 @@ void loop() {
   char command = receiveCommand();
 
   if (command) {
-    if (command == MOTOR_FORWARD || command == MOTOR_BACKWARD || MOTOR_LEFT || command == MOTOR_RIGHT || command == STOP) {
-      updateDirection(command);
-      updateSpeed(command);
+    if (command == MOTOR_FORWARD || command == MOTOR_BACKWARD || MOTOR_LEFT || command == MOTOR_RIGHT || command == MOTOR_STOP) {
+      updateMotorDirection(command);
+      updateMotorSpeed(command);
     } else {
       updateServo(command);
     }
@@ -87,7 +87,7 @@ void loop() {
     }
   }
   
-  checkDistance();  // Check distance regularly
+  checkSensorDistance();  // Check distance regularly
   delay(100);
 }
 
@@ -112,18 +112,18 @@ char receiveCommand() {
   return 0;
 }
 
-void updateDirection(char command) {
+void updateMotorDirection(char command) {
   if (command == MOTOR_FORWARD || command == MOTOR_BACKWARD || MOTOR_LEFT || command == MOTOR_RIGHT) {
     direction = command;
     Serial.print("Direction set to: ");
     Serial.println(direction);
-  } else if (command == '0' || command == STOP) {
+  } else if (command == '0' || command == MOTOR_STOP) {
     direction = 's';
     Serial.println("Stopped");
   }
 }
 
-void updateSpeed(char command) {
+void updateMotorSpeed(char command) {
   if (command >= '1' && command <= '5') { 
     speed = (command - '0') * 10;
     Serial.print("Speed set to: ");
@@ -135,31 +135,31 @@ void updateSpeed(char command) {
 void setMotorPins() {
   int pwmDutyCycle = (speed * 255) / 50; // scale speed to 0-255 PWM
   
-  if (direction == 'f') {
+  if (direction == MOTOR_FORWARD) {
     analogWrite(rightMotorLogicPin1, pwmDutyCycle);
     analogWrite(rightMotorLogicPin2, 0);
     analogWrite(leftMotorLogicPin1, pwmDutyCycle);
     analogWrite(leftMotorLogicPin2, 0);
     Serial.println("Motors updated");
-  } else if (direction == 'b') {
+  } else if (direction == MOTOR_BACKWARD) {
     analogWrite(rightMotorLogicPin1, 0);
     analogWrite(rightMotorLogicPin2, pwmDutyCycle);
     analogWrite(leftMotorLogicPin1, 0);
     analogWrite(leftMotorLogicPin2, pwmDutyCycle);
     Serial.println("Motors updated");
-  } else if (direction == 'l') {
+  } else if (direction == MOTOR_LEFT) {
     analogWrite(rightMotorLogicPin1, pwmDutyCycle);
     analogWrite(rightMotorLogicPin2, 0);
     analogWrite(leftMotorLogicPin1, 0);
     analogWrite(leftMotorLogicPin2, pwmDutyCycle);
     Serial.println("Motors updated");
-  } else if (direction == 'r') {
+  } else if (direction == MOTOR_RIGHT) {
     analogWrite(rightMotorLogicPin1, 0);
     analogWrite(rightMotorLogicPin2, pwmDutyCycle);
     analogWrite(leftMotorLogicPin1, pwmDutyCycle);
     analogWrite(leftMotorLogicPin2, 0);
     Serial.println("Motors updated");
-  } else if (direction == 's') {
+  } else if (direction == MOTOR_STOP) {
     analogWrite(rightMotorLogicPin1, 0);
     analogWrite(rightMotorLogicPin2, 0);
     analogWrite(leftMotorLogicPin1, 0);
@@ -168,7 +168,7 @@ void setMotorPins() {
   }
 }
 
-void checkDistance() {
+void checkSensorDistance() {
   // Clear sensorTrigPin
   digitalWrite(sensorTrigPin, LOW);
   delayMicroseconds(2);
