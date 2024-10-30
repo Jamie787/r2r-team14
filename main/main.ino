@@ -16,7 +16,7 @@
 
 // Globals and Constants
 
-// Ultrasonic
+// Ultrasonic Sensor
 const int leftTrig = -1;
 const int leftEcho = -1;
 
@@ -26,17 +26,17 @@ const int forwardEcho = -1;
 const int rightTrig = -1;
 const int rightEcho = -1;
 
+// Motors
+const int rightMotorPin1 = -1;    
+const int rightMotorPin2 = -1;  
+const int leftMotorPin1 = -1;    
+const int leftMotorPin2 = -1;
 
 // Servo
 const int clawServoPin = -1;
 Servo clawServo;
 const int pivotServoPin = -1;
 Servo pivotServo;
-
-// Motors
-const int leftMotor = -1;
-const int rightMotor = -1;
-
 
 // Functions
 
@@ -45,6 +45,7 @@ void setup() {
 
   // TODO: Add pinMode() for all of the pins once they're finalised
   initialiseUltrasonic();
+  initaliseMotors();
   initialiseServo();
 }
 
@@ -93,6 +94,38 @@ void loop() {
   }
 }
 
+// Subroutine
+void initialiseUltrasonic() {
+  pinMode(leftTrig, OUTPUT);
+  pinMode(leftEcho, INPUT);
+  pinMode(forwardTrig, OUTPUT);
+  pinMode(forwardEcho, INPUT);
+  pinMode(rightTrig, OUTPUT);
+  pinMode(rightEcho, INPUT);
+
+  Serial.println("Ultrasonic Pins initialized");
+}
+
+void initializePins() {
+  pinMode(rightMotorPin1, OUTPUT);
+  pinMode(rightMotorPin2, OUTPUT);
+  pinMode(leftMotorPin1, OUTPUT);
+  pinMode(leftMotorPin2, OUTPUT);
+  
+  Serial.println("Motor Pins initialized");
+}
+
+void initialiseServo() {
+  clawServo.attach(clawServoPin);
+  pivotServo.attach(pivotServoPin);
+
+  // TODO: Figure out the difference between 180 and 360
+  // clawServo.write(0);
+  // pivotServo.write(0);
+  // Serial.println("Servo Pins initialized");
+}
+
+// Helper Functions
 void moveDistance(int distance) {
   if (distance >= 0) {
     Serial.print("Moving forward ");
@@ -130,15 +163,6 @@ float findDistance(int trigPin, int echoPin) {
   return distance;
 }
 
-void initialiseUltrasonic() {
-  pinMode(leftTrig, OUTPUT);
-  pinMode(leftEcho, INPUT);
-  pinMode(forwardTrig, OUTPUT);
-  pinMode(forwardEcho, INPUT);
-  pinMode(rightTrig, OUTPUT);
-  pinMode(rightEcho, INPUT);
-}
-
 void readString(char *string) {
   delay(100);
 
@@ -151,15 +175,6 @@ void readString(char *string) {
   }
 
   string[i] = '\0';
-}
-
-void initialiseServo() {
-  clawServo.attach(clawServoPin);
-  pivotServo.attach(pivotServoPin);
-
-  // TODO: Figure out the difference between 180 and 360
-  // clawServo.write(0);
-  // pivotServo.write(0);
 }
 
 void moveClaw(int angle) {
