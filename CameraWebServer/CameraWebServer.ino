@@ -36,9 +36,8 @@
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-// const char *ssid = "ORBI05";
-// const char *password = "siennagold1";
-const char *ssid = "esp32 cam";
+
+const char *ssid = "r2r group 8";
 const char *password = "password";
 
 void startCameraServer();

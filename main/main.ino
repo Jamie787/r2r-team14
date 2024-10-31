@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <Servo.h>
 
+///////////////////////////////////////////////////
 // Defines
+///////////////////////////////////////////////////
 
 #define MAX_ARGS 16
 
@@ -14,31 +16,37 @@
 
 #define checkCommand(command) strcmp(args[0], command) == 0
 
+///////////////////////////////////////////////////
 // Globals and Constants
+///////////////////////////////////////////////////
 
 // Ultrasonic Sensor
-const int leftTrig = -1;
-const int leftEcho = -1;
+const int leftTrig = 2;
+const int leftEcho = 4;
 
-const int forwardTrig = -1;
-const int forwardEcho = -1;
+const int forwardTrig = 0;
+const int forwardEcho = 1;
 
-const int rightTrig = -1;
-const int rightEcho = -1;
+const int rightTrig = 7;
+const int rightEcho = 8;
 
 // Motors
-const int rightMotorPin1 = -1;    
-const int rightMotorPin2 = -1;  
-const int leftMotorPin1 = -1;    
-const int leftMotorPin2 = -1;
+const int leftMotorPin1 = 5;    
+const int leftMotorPin2 = 6;
+const int rightMotorPin1 = 10;    
+const int rightMotorPin2 = 11;  
 
 // Servo
-const int clawServoPin = -1;
+const int clawServoPin = 9;
 Servo clawServo;
-const int pivotServoPin = -1;
-Servo pivotServo;
 
+// Not ceratain about this...
+// const int pivotServoPin = 3;
+// Servo pivotServo;
+
+///////////////////////////////////////////////////
 // Functions
+///////////////////////////////////////////////////
 
 void setup() {
   Serial.begin(9600);
@@ -78,7 +86,7 @@ void loop() {
     
     }
     else if (checkCommand(DRIVE_COMMAND)) {
-    
+      
     }
     else if (checkCommand(CLAMP_COMMAND)) {
       if (args[1] != nullptr) {
@@ -117,12 +125,12 @@ void initializePins() {
 
 void initialiseServo() {
   clawServo.attach(clawServoPin);
-  pivotServo.attach(pivotServoPin);
+  clawServo.write(0);
 
   // TODO: Figure out the difference between 180 and 360
-  // clawServo.write(0);
+  // pivotServo.attach(pivotServoPin);
   // pivotServo.write(0);
-  // Serial.println("Servo Pins initialized");
+  Serial.println("Servo Pins initialized");
 }
 
 // Helper Functions
@@ -171,6 +179,7 @@ void readString(char *string) {
     char c = Serial.read();
     if (c != '\n') {
       string[i]  = c;
+      i--;
     }
   }
 
@@ -187,4 +196,13 @@ void moveClaw(int angle) {
   } else {
     Serial.println("Invalid angle");
   }
+}
+
+void initaliseMotors() {
+  pinMode(leftMotorPin1, OUTPUT);
+  pinMode(leftMotorPin2, OUTPUT);
+  pinMode(rightMotorPin1, OUTPUT);
+  pinMode(rightMotorPin2, OUTPUT);
+
+  Serial.println("Motors initialised");
 }

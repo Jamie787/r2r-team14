@@ -1,8 +1,8 @@
 // Compliance Testing
 // - prints distance detected by sensor
 
-int sensorEchoPin = 2;
-int sensorTrigPin = 4;
+int sensorTrigPin = 7;
+int sensorEchoPin = 8;
 
 long duration;
 int distance;
