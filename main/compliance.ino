@@ -19,10 +19,10 @@
 #define MOTOR_RIGHT "r"
 #define MOTOR_STOP "s"
 
-#define SERVO_UP "U"
-#define SERVO_DOWN "D"
-#define SERVO_IN "I"
-#define SERVO_OUT "O"
+#define SERVO_UP "u"
+#define SERVO_DOWN "d"
+#define SERVO_IN "i"
+#define SERVO_OUT "o"
 
 // Global Variables
 
@@ -73,7 +73,7 @@ void loop() {
     if (command == MOTOR_FORWARD || command == MOTOR_BACKWARD || MOTOR_LEFT || command == MOTOR_RIGHT || command == MOTOR_STOP) {
       updateMotorDirection(command);
       updateMotorSpeed(command);
-    } else {
+    } else if (command == SERVO_UP || command == SERVO_DOWN || command == SERVO_IN || command == SERVO_OUT) {
       updateServo(command);
     }
 
@@ -81,14 +81,14 @@ void loop() {
       Serial.println("Exiting program...");
       Serial.println("Goodbye");
       delay(100);
-      exit(0);  // terminate
+      exit(0);
     } else {
       setMotorPins();
     }
   }
   
   checkSensorDistance();  // Check distance regularly
-  delay(100);
+  delay(1000);
 }
 
 // Subroutine
