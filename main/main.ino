@@ -3,21 +3,27 @@
 #include <Servo.h>
 
 ///////////////////////////////////////////////////
-// Defines
+// Defines and Constants
 ///////////////////////////////////////////////////
+
+const int MOTOR_CONTROL_SPEED = 100;
+#define MOTOR_TRAVEL_SPEED 1
+#define MOTOR_ROTATION_SPEED 1
 
 #define MAX_ARGS 16
 
 #define MOVE_COMMAND "move"
 #define ROTATE_COMMAND "rotate"
-#define SENSOR_COMMAND "sensor"
 #define DRIVE_COMMAND "drive"
+#define STOP_COMMAND "stop"
+
+#define SENSOR_COMMAND "sensor"
 #define CLAMP_COMMAND "clamp"
 
 #define checkCommand(command) strcmp(args[0], command) == 0
 
 ///////////////////////////////////////////////////
-// Globals and Constants
+// Globals and Pins
 ///////////////////////////////////////////////////
 
 // Ultrasonic Sensor
@@ -53,7 +59,7 @@ void setup() {
 
   // TODO: Add pinMode() for all of the pins once they're finalised
   initialiseUltrasonic();
-  initaliseMotors();
+  initialiseMotors();
   initialiseServo();
 }
 
@@ -68,7 +74,10 @@ void loop() {
     args[0] = strtok(input, " ");
 
     for (int i = 1; (args[i] = strtok(nullptr, " ")) != nullptr; i++);
-
+    if (args[0] == nullptr) {
+      Serial.println("No command");
+      return;
+    }
 
     // Commands
     if (checkCommand(MOVE_COMMAND)) {
@@ -83,16 +92,36 @@ void loop() {
       checkUltrasonic();
     }
     else if (checkCommand(ROTATE_COMMAND)) {
-    
-    }
-    else if (checkCommand(DRIVE_COMMAND)) {
-      
-    }
-    else if (checkCommand(CLAMP_COMMAND)) {
       if (args[1] != nullptr) {
         int angle = atoi(args[1]);
-        moveClaw(angle);
+        rotateAngle(angle);
+      } else {
+        Serial.println("Invalid command. No angle");
       }
+    }
+    else if (checkCommand(DRIVE_COMMAND)) {
+      if (args[1] == nullptr) {
+        Serial.println("Invalid drive command, no direction");
+      }
+
+      char direction = *args[1];
+
+      if (!(direction == 'f' || direction == 'b' || direction == 'l' || direction == 'r')) {
+        Serial.print("Invalid drive command, '");
+        Serial.print(direction);
+        Serial.println("' is an invalid direction");
+      }
+
+      drive(direction);
+    }
+    else if (checkCommand(STOP_COMMAND)) {
+      halt();
+    }
+    else if (checkCommand(CLAMP_COMMAND)) {
+      // if (args[1] != nullptr) {
+      //   int angle = atoi(args[1]);
+      //   moveClaw(angle);
+      // }
     }
     // If the user provides an invalid command
     else {
@@ -114,7 +143,7 @@ void initialiseUltrasonic() {
   Serial.println("Ultrasonic Pins initialized");
 }
 
-void initializePins() {
+void initialiseMotors() {
   pinMode(rightMotorPin1, OUTPUT);
   pinMode(rightMotorPin2, OUTPUT);
   pinMode(leftMotorPin1, OUTPUT);
@@ -135,15 +164,19 @@ void initialiseServo() {
 
 // Helper Functions
 void moveDistance(int distance) {
+  char direction;
+
   if (distance >= 0) {
+    direction = 'f';
     Serial.print("Moving forward ");
   } else {
+    direction = 'b';
     Serial.print("Moving backward ");
     distance *= -1;
   }
 
-  Serial.print(distance);
-  Serial.println(" cm");
+  int time = distance / MOTOR_TRAVEL_SPEED / 100;
+  driveSeconds(time, direction);
 }
 
 void checkUltrasonic() {
@@ -198,11 +231,59 @@ void moveClaw(int angle) {
   }
 }
 
-void initaliseMotors() {
-  pinMode(leftMotorPin1, OUTPUT);
-  pinMode(leftMotorPin2, OUTPUT);
-  pinMode(rightMotorPin1, OUTPUT);
-  pinMode(rightMotorPin2, OUTPUT);
+void driveSeconds(int time, char direction) {
+  drive(direction);
+  delay(time * 1000);
+  halt();
+}
 
-  Serial.println("Motors initialised");
+void drive(char direction) {
+  if (direction == 'f') {
+    analogWrite(leftMotorPin1, 0);
+    analogWrite(leftMotorPin2, MOTOR_CONTROL_SPEED);
+    analogWrite(rightMotorPin1, 0);
+    analogWrite(rightMotorPin2, MOTOR_CONTROL_SPEED);
+  }
+  else if (direction == 'b') {
+    analogWrite(leftMotorPin1, MOTOR_CONTROL_SPEED);
+    analogWrite(leftMotorPin2, 0);
+    analogWrite(rightMotorPin1, MOTOR_CONTROL_SPEED);
+    analogWrite(rightMotorPin2, 0);
+  }
+  else if (direction == 'l') {
+    analogWrite(leftMotorPin1, MOTOR_CONTROL_SPEED);
+    analogWrite(leftMotorPin2, 0);
+    analogWrite(rightMotorPin1, 0);
+    analogWrite(rightMotorPin2, MOTOR_CONTROL_SPEED);
+  }
+  else if (direction == 'r') {
+    analogWrite(leftMotorPin1, 0);
+    analogWrite(leftMotorPin2, MOTOR_CONTROL_SPEED);
+    analogWrite(rightMotorPin1, MOTOR_CONTROL_SPEED);
+    analogWrite(rightMotorPin2, 0);
+  }
+}
+
+void halt() {
+  analogWrite(leftMotorPin1, 0);
+  analogWrite(leftMotorPin2, 0);
+  analogWrite(rightMotorPin1, 0);
+  analogWrite(rightMotorPin2, 0);
+}
+
+void rotateAngle(int angle) {
+  char direction;
+
+  if (angle >= 0) {
+    direction = 'r';
+    Serial.println("Rotating right");
+  } else {
+    direction = 'l';
+    Serial.println("Rotating left");
+    angle *= -1;
+  }
+
+  int time = angle / MOTOR_ROTATION_SPEED;
+
+  driveSeconds(time, direction);
 }
