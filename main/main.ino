@@ -10,7 +10,9 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define MOTOR_TRAVEL_SPEED 1
 #define MOTOR_ROTATION_SPEED 1
 #define MAZE_DISTANCE 42
-#define TURNING_DISTANCE 10
+#define TURNING_DISTANCE 10 // to move 90 degrees (will have to test on the day)
+#define STAIR_DISTANCE 20 // (will have to test on the day)
+
 
 #define MAX_ARGS 16
 
