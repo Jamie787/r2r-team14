@@ -9,6 +9,8 @@
 const int MOTOR_CONTROL_SPEED = 100;
 #define MOTOR_TRAVEL_SPEED 1
 #define MOTOR_ROTATION_SPEED 1
+#define MAZE_DISTANCE 42
+#define TURNING_DISTANCE 10
 
 #define MAX_ARGS 16
 
@@ -86,11 +88,17 @@ void loop() {
 
     // Commands
     if (checkCommand(MOVE_COMMAND)) {
-      if (args[1] != nullptr) {
-        int distance = atoi(args[1]);
-        moveDistance(distance);
+      if (args[1] != nullptr && args[2] != nullptr) {
+        int distance = atoi(args[1]); // convert first arg to integer
+        char direction = args[2][0];  // get first character of the second arg
+
+        if (direction == 'f' || direction == 'b' || direction == 'l' || direction == 'r') {
+          moveDistance(distance, direction);
+        } else {
+          Serial.println("Invalid direction. Use 'f', 'b', 'l', or 'r'.");
+        }
       } else {
-        Serial.println("Invalid command. No distance");
+        Serial.println("Invalid command. Please provide both distance and direction.");
       }
     } 
     else if (checkCommand(SENSOR_COMMAND)) {
@@ -174,22 +182,6 @@ void initialiseServo() {
 // Helper Functions
 ///////////////////////////////////////////////////
 
-void moveDistance(int distance) {
-  char direction;
-
-  if (distance >= 0) {
-    direction = 'f';
-    Serial.print("Moving forward ");
-  } else {
-    direction = 'b';
-    Serial.print("Moving backward ");
-    distance *= -1;
-  }
-
-  int time = distance / MOTOR_TRAVEL_SPEED / 100;
-  driveSeconds(time, direction);
-}
-
 void checkUltrasonic() {
   float leftDistance = findDistance(leftTrig, leftEcho);
   float forwardDistance = findDistance(forwardTrig, forwardEcho);
@@ -241,6 +233,12 @@ void moveClaw(int angle) {
   } else {
     Serial.println("Invalid angle");
   }
+}
+
+
+void moveDistance(int distance, char direction) {
+  int time = distance / MOTOR_TRAVEL_SPEED / 100;
+  driveSeconds(time, direction);
 }
 
 void driveSeconds(int time, char direction) {
