@@ -25,6 +25,9 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define CLAMP_COMMAND "clamp"
 #define PIVOT_COMMAND "pivot"
 
+#define GRAB_COMMAND "grab"
+#define DROP_COMMAND "drop"
+
 // Automation Constants
 #define SENSE_COMMAND "sense"
 #define MAZE_COMMAND "maze"
@@ -66,6 +69,7 @@ const int pivotServoPin = 3;
 Servo pivotServo;
 
 int currentDistance = 0;
+int currentServoAngle = 0;
 
 ///////////////////////////////////////////////////
 // Functions
@@ -142,9 +146,17 @@ void loop() {
     }
     else if (checkCommand(CLAMP_COMMAND)) {
       if (args[1] != nullptr) {
-        if (*args[1] == 'O') {
-          
+        if (*args[1] == 'o') {
+          currentServoAngle = OUT_CLAW;
+        } else if (*args[1] == 'i') {
+          currentServoAngle = 0;
+        } else if (*args[1] == 't') {
+          currentServoAngle += 10;
+        } else if (*args[1] == 'l') {
+          currentServoAngle -= 10;
         }
+
+        clawServo.write(currentDistance);
       }
     }
     else if (checkCommand(PIVOT_COMMAND)) {
@@ -159,6 +171,12 @@ void loop() {
           movePivotDistance(currentDistance - 10);
         }
       }
+    }
+    else if (checkCommand(GRAB_COMMAND)) {
+      grab()
+    }
+    else if (checkCommand(DROP_COMMAND)) {
+      drop()
     }
     // If the user provides an invalid command
     else {
@@ -353,4 +371,20 @@ void turnDirection(char direction) {
   } else if (direction == 'r') {
     rotateAngle(90);
   }
+}
+
+void grab() {
+  movePivotDistance(0);
+
+  currentServoAngle = OUT_CLAW + 15;
+  clawServo.write(currentServoAngle);
+
+  movePivotDistance(MAX_PIVOT_DISTANCE);
+}
+
+void drop() {
+  movePivotDistance(0);
+
+  currentServoAngle = 0;
+  clawServo.write(currentServoAngle);
 }
