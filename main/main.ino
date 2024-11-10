@@ -346,3 +346,11 @@ void movePivotDistance(int distance) {
     pivotServo.write(SERVO_STOP);
   }
 }
+
+void turnDirection(char direction) {
+  if (direction == 'l') {
+    rotateAngle(-90);
+  } else if (direction == 'r') {
+    rotateAngle(90);
+  }
+}
