@@ -1,41 +1,41 @@
 
 void moveThroughMaze() {
     // TODO: adjust depending on the maze
-    moveRobotDistance(MAZE_DISTANCE, f);
-    turnDirection(r);
-    moveRobotDistance(MAZE_DISTANCE, f);
-    turnDirection(l);
-    moveRobotDistance(MAZE_DISTANCE, f);
+    moveDistance(MAZE_DISTANCE);
+    turnDirection('r');
+    moveDistance(MAZE_DISTANCE);
+    turnDirection('l');
+    moveDistance(MAZE_DISTANCE);
 
     // turn 180 degrees
-    turnDirection(r); //moveRobotDistance(TURNING_DISTANCE, r);
-    turnDirection(r);
+    turnDirection('r'); //moveRobotDistance(TURNING_DISTANCE, r);
+    turnDirection('r');
 
     // TODO: go back through the maze
-    moveRobotDistance(MAZE_DISTANCE, f);
-    turnDirection(r);
-    moveRobotDistance(MAZE_DISTANCE, f);
-    turnDirection(l);
-    moveRobotDistance(MAZE_DISTANCE, f);
+    moveDistance(MAZE_DISTANCE);
+    turnDirection('r');
+    moveDistance(MAZE_DISTANCE);
+    turnDirection('l');
+    moveDistance(MAZE_DISTANCE);
 };
 
 void senseSurroundings() {
     for (int i = 0; i < 4; i++) {
         // check surroundings and turn
         checkUltrasonic();
-        turnDirection(r);
+        turnDirection('r');
     }
 };
 
 void traverseStairs() {
     // go up the stairs
-    moveRobotDistance(STAIR_DISTANCE, f);
+    moveDistance(STAIR_DISTANCE);
 
     // turn 180 degrees
-    turnDirection(r);
-    turnDirection(r);
+    turnDirection('r');
+    turnDirection('r');
 
     // go down the stairs
-    moveRobotDistance(STAIR_DISTANCE, f);
+    moveDistance(STAIR_DISTANCE);
 
 };

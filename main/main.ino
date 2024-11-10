@@ -17,15 +17,20 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define MAX_ARGS 16
 
 #define MOVE_COMMAND "move" // moves certain distance
+#define TURN_COMMAND "turn" // turns a direction
 #define ROTATE_COMMAND "rotate" // rotates by given angle
 #define DRIVE_COMMAND "drive" // drives in given direction until stopped
-#define SENSOR_COMMAND "sensor" // prints distance from all 3 sensors
-#define CLAMP_COMMAND "clamp" // clamps object
-#define PIVOT_COMMAND "pivot" // moves claw up and down object
 #define STOP_COMMAND "s" // stops motors
 
+#define SENSOR_COMMAND "sensor" // prints distance from all 3 sensors
+
+#define CLAW_COMMAND "claw" // clamps object
+#define PIVOT_COMMAND "pivot" // moves claw up and down object
+
+#define HELP_COMMAND "help" // prints help information for all commands
+
 // Automation Constants
-#define SENSE_COMMAND "c"
+#define SENSE_COMMAND "sense"
 #define MAZE_COMMAND "maze"
 #define STAIRS_COMMAND "stairs"
 #define GRAB_COMMAND "grab"
@@ -80,22 +85,7 @@ void setup() {
   initialiseMotors();
   initialiseServo();
 
-  Serial.println("Robot Control Menu:");
-  
-  Serial.println("Directions:");
-  Serial.println("f - forward");
-  Serial.println("b - backward");
-  Serial.println("r - right");
-  Serial.println("l - left");
-
-  Serial.println("\nCommands:");
-  Serial.println("drive [direction] - drives in given direction");
-  Serial.println("s - stops motors");
-  Serial.println("c - check surroundings");
-  Serial.println("maze - move through maze");
-  Serial.println("stairs - traverse up stairs");
-  Serial.println("grab - picks up object");
-  Serial.println("drop - drops object");
+  help();
 
   Serial.println("\nEnter a command:");
 }
@@ -154,7 +144,7 @@ void loop() {
     else if (checkCommand(STOP_COMMAND)) {
       halt();
     }
-    else if (checkCommand(CLAMP_COMMAND)) {
+    else if (checkCommand(CLAW_COMMAND)) {
       if (args[1] != nullptr) {
         if (*args[1] == 'o') {
           currentServoAngle = OUT_CLAW;
@@ -175,9 +165,9 @@ void loop() {
           movePivotDistance(MAX_PIVOT_DISTANCE);
         } else if (*args[1] == 'd') {
           movePivotDistance(0);
-        } else if (strcmp(args[1], "lu") === 0) {
+        } else if (strcmp(args[1], "lu") == 0) {
           movePivotDistance(currentDistance + 10);
-        } else if (strcmp(args[1], "ld") === 0) {
+        } else if (strcmp(args[1], "ld") == 0) {
           movePivotDistance(currentDistance - 10);
         }
       }
@@ -195,7 +185,7 @@ void loop() {
       clawGrab();
     }
     else if (checkCommand(DROP_COMMAND)) {
-      clawDrop()
+      clawDrop();
     }
     
     // If the user provides an invalid command
@@ -300,10 +290,10 @@ void readString(char *string) {
   string[i] = '\0';
 }
 
-void moveRobotDistance(int distance, char direction) {
-  int time = distance / MOTOR_TRAVEL_SPEED / 100;
-  driveSeconds(time, direction);
-}
+// void moveRobotDistance(int distance, char direction) {
+//   int time = distance / MOTOR_TRAVEL_SPEED / 100;
+//   driveSeconds(time, direction);
+// }
 
 void driveSeconds(int time, char direction) {
   drive(direction);
@@ -408,3 +398,48 @@ void clawDrop() {
   currentServoAngle = 0;
   clawServo.write(currentServoAngle);
 }
+
+void help() {
+  Serial.println("Robot Control Menu:");
+  
+  Serial.println("\nCommands:");
+
+  Serial.println("\nhelp - display's the robot control menu\n");
+
+  Serial.println("Motors:");
+  Serial.println("move [distance] - moves forward or backwards by the given distance and sign, with positive being forward");
+  Serial.println("turn [l - r] - turns 90 degrees left or right depending on the input");
+  Serial.println("rotate [angle] - rotates left or right by a given angle and sign, with positive being right");
+  Serial.println("drive [direction] - drives in a given direction");
+    Serial.println("\tDirections:");
+    Serial.println("\tf - forward");
+    Serial.println("\tb - backward");
+    Serial.println("\tr - right");
+    Serial.println("\tl - left");
+  Serial.println("stop - stops motors if they are enabled from drive");
+
+  Serial.println("\nSensors:");
+  Serial.println("sensor - prints the distance from the three ultrasonic sensors");
+
+  Serial.println("\nServo: ");
+  Serial.println("claw [state] - changes the position of the claw to one of the states");
+    Serial.println("\tClaw States:");
+    Serial.println("\to - out");
+    Serial.println("\ti - in");
+    Serial.println("\tt - tighten");
+    Serial.println("\tl - loosen");
+  Serial.println("pivot [state] - pivots the height of the claw to a given state");
+    Serial.println("\tPivot States:");
+    Serial.println("\tu - fully up");
+    Serial.println("\td - fully down");
+    Serial.println("\tlu - little up");
+    Serial.println("\tld - little down");
+
+  Serial.println("\nAutomation:");
+  Serial.println("sense - check surroundings");
+  Serial.println("maze - move through maze");
+  Serial.println("stairs - traverse up stairs");
+  Serial.println("grab - picks up object");
+  Serial.println("drop - drops object");
+}
+
