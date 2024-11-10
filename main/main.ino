@@ -20,6 +20,11 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define SENSOR_COMMAND "sensor"
 #define CLAMP_COMMAND "clamp"
 
+// Automation Constants
+#define SENSE_COMMAND "sense"
+#define MAZE_COMMAND "maze"
+#define STAIRS_COMMAND "stairs"
+
 #define checkCommand(command) strcmp(args[0], command) == 0
 
 ///////////////////////////////////////////////////
@@ -46,7 +51,7 @@ const int rightMotorPin2 = 11;
 const int clawServoPin = 9;
 Servo clawServo;
 
-// Not ceratain about this...
+// Not certain about this...
 // const int pivotServoPin = 3;
 // Servo pivotServo;
 
@@ -131,7 +136,10 @@ void loop() {
   }
 }
 
-// Subroutine
+///////////////////////////////////////////////////
+// Subroutines
+///////////////////////////////////////////////////
+
 void initialiseUltrasonic() {
   pinMode(leftTrig, OUTPUT);
   pinMode(leftEcho, INPUT);
@@ -162,7 +170,10 @@ void initialiseServo() {
   Serial.println("Servo Pins initialized");
 }
 
+///////////////////////////////////////////////////
 // Helper Functions
+///////////////////////////////////////////////////
+
 void moveDistance(int distance) {
   char direction;
 
@@ -189,6 +200,7 @@ void checkUltrasonic() {
 
   Serial.print("Left distance: ");
   Serial.print(leftDistance);
+  
   Serial.print("\t\t Right distance: ");
   Serial.println(rightDistance);
 }
