@@ -16,12 +16,12 @@ const int MOTOR_CONTROL_SPEED = 100;
 
 #define MAX_ARGS 16
 
-#define MOVE_COMMAND "move"
-#define ROTATE_COMMAND "rotate"
-#define DRIVE_COMMAND "drive"
-#define STOP_COMMAND "stop"
+#define MOVE_COMMAND "move" // moves certain distance
+#define ROTATE_COMMAND "rotate" // rotates by given angle
+#define DRIVE_COMMAND "drive" // drives in given direction until stopped
+#define STOP_COMMAND "stop" // stops motots
 
-#define SENSOR_COMMAND "sensor"
+#define SENSOR_COMMAND "sensor" // prints distance from all 3 sensors
 #define CLAMP_COMMAND "clamp"
 #define PIVOT_COMMAND "pivot"
 
@@ -29,6 +29,7 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define SENSE_COMMAND "sense"
 #define MAZE_COMMAND "maze"
 #define STAIRS_COMMAND "stairs"
+// TODO: add claw constant
 
 #define checkCommand(command) strcmp(args[0], command) == 0
 
@@ -98,19 +99,13 @@ void loop() {
 
     // Commands
     if (checkCommand(MOVE_COMMAND)) {
-      if (args[1] != nullptr && args[2] != nullptr) {
-        int distance = atoi(args[1]); // convert first arg to integer
-        char direction = args[2][0];  // get first character of the second arg
-
-        if (direction == 'f' || direction == 'b' || direction == 'l' || direction == 'r') {
-          moveDistance(distance, direction);
-        } else {
-          Serial.println("Invalid direction. Use 'f', 'b', 'l', or 'r'.");
-        }
+      if (args[1] != nullptr) {
+        int distance = atoi(args[1]);
+        moveDistance(distance);
       } else {
-        Serial.println("Invalid command. Please provide both distance and direction.");
+        Serial.println("Invalid command. Please provide distance");
       }
-    } 
+    }
     else if (checkCommand(SENSOR_COMMAND)) {
       checkUltrasonic();
     }
@@ -159,6 +154,15 @@ void loop() {
           movePivotDistance(currentDistance - 10);
         }
       }
+    } 
+    else if (checkCommand(MAZE_COMMAND)) {
+      moveThroughMaze();
+    }
+    else if (checkCommand(SENSE_COMMAND)) {
+      senseSurroundings();
+    } 
+    else if (checkCommand(STAIRS_COMMAND)) {
+      traverseStairs();
     }
     // If the user provides an invalid command
     else {
@@ -262,7 +266,7 @@ void readString(char *string) {
   string[i] = '\0';
 }
 
-void moveDistanceOne(int distance, char direction) {
+void moveRobotDistance(int distance, char direction) {
   int time = distance / MOTOR_TRAVEL_SPEED / 100;
   driveSeconds(time, direction);
 }
