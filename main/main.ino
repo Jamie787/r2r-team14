@@ -10,8 +10,8 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define MOTOR_TRAVEL_SPEED 1
 #define MOTOR_ROTATION_SPEED 1
 #define MAZE_DISTANCE 42
-#define TURNING_DISTANCE 10 // to move 90 degrees (will have to test on the day)
-#define STAIR_DISTANCE 20 // (will have to test on the day)
+#define TURNING_DISTANCE 10 // TODO: test on the day
+#define STAIR_DISTANCE 20 // TODO: test on the day
 
 
 #define MAX_ARGS 16
@@ -30,8 +30,6 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define STAIRS_COMMAND "stairs"
 #define GRAB_COMMAND "grab"
 #define DROP_COMMAND "drop"
-
-// TODO: add claw constant
 
 #define checkCommand(command) strcmp(args[0], command) == 0
 
@@ -78,7 +76,6 @@ int currentServoAngle = 0;
 void setup() {
   Serial.begin(9600);
 
-  // TODO: Add pinMode() for all of the pins once they're finalised
   initialiseUltrasonic();
   initialiseMotors();
   initialiseServo();
@@ -200,6 +197,7 @@ void loop() {
     else if (checkCommand(DROP_COMMAND)) {
       clawDrop()
     }
+    
     // If the user provides an invalid command
     else {
       Serial.println("Invalid command");
