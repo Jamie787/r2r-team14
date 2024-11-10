@@ -156,13 +156,13 @@ void loop() {
     }
     else if (checkCommand(PIVOT_COMMAND)) {
       if (args[1] != nullptr) {
-        if (*args[1] == 'U') {
+        if (*args[1] == 'u') {
           movePivotDistance(MAX_PIVOT_DISTANCE);
-        } else if (*args[1] == 'D') {
+        } else if (*args[1] == 'd') {
           movePivotDistance(0);
-        } else if (strcmp(args[1], "LU") === 0) {
+        } else if (strcmp(args[1], "lu") === 0) {
           movePivotDistance(currentDistance + 10);
-        } else if (strcmp(args[1], "LD") === 0) {
+        } else if (strcmp(args[1], "ld") === 0) {
           movePivotDistance(currentDistance - 10);
         }
       }
