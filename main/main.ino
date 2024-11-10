@@ -7,8 +7,10 @@
 ///////////////////////////////////////////////////
 
 const int MOTOR_CONTROL_SPEED = 100;
-#define MOTOR_TRAVEL_SPEED 1 // m/s
-#define MOTOR_ROTATION_SPEED 1 // m/s
+#define MOTOR_TRAVEL_SPEED 1
+#define MOTOR_ROTATION_SPEED 1
+#define MAZE_DISTANCE 42
+#define TURNING_DISTANCE 10
 
 #define MAX_ARGS 16
 
@@ -20,6 +22,11 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define SENSOR_COMMAND "sensor"
 #define CLAMP_COMMAND "clamp"
 #define PIVOT_COMMAND "pivot"
+
+// Automation Constants
+#define SENSE_COMMAND "sense"
+#define MAZE_COMMAND "maze"
+#define STAIRS_COMMAND "stairs"
 
 #define checkCommand(command) strcmp(args[0], command) == 0
 
@@ -89,11 +96,17 @@ void loop() {
 
     // Commands
     if (checkCommand(MOVE_COMMAND)) {
-      if (args[1] != nullptr) {
-        int distance = atoi(args[1]);
-        moveDistance(distance);
+      if (args[1] != nullptr && args[2] != nullptr) {
+        int distance = atoi(args[1]); // convert first arg to integer
+        char direction = args[2][0];  // get first character of the second arg
+
+        if (direction == 'f' || direction == 'b' || direction == 'l' || direction == 'r') {
+          moveDistance(distance, direction);
+        } else {
+          Serial.println("Invalid direction. Use 'f', 'b', 'l', or 'r'.");
+        }
       } else {
-        Serial.println("Invalid command. No distance");
+        Serial.println("Invalid command. Please provide both distance and direction.");
       }
     } 
     else if (checkCommand(SENSOR_COMMAND)) {
@@ -153,7 +166,10 @@ void loop() {
   }
 }
 
-// Subroutine
+///////////////////////////////////////////////////
+// Subroutines
+///////////////////////////////////////////////////
+
 void initialiseUltrasonic() {
   pinMode(leftTrig, OUTPUT);
   pinMode(leftEcho, INPUT);
@@ -183,7 +199,10 @@ void initialiseServo() {
   Serial.println("Servo Pins initialized");
 }
 
+///////////////////////////////////////////////////
 // Helper Functions
+///////////////////////////////////////////////////
+
 void moveDistance(int distance) {
   char direction;
 
@@ -210,6 +229,7 @@ void checkUltrasonic() {
 
   Serial.print("Left distance: ");
   Serial.print(leftDistance);
+  
   Serial.print("\t\t Right distance: ");
   Serial.println(rightDistance);
 }
@@ -238,6 +258,11 @@ void readString(char *string) {
   }
 
   string[i] = '\0';
+}
+
+void moveDistanceOne(int distance, char direction) {
+  int time = distance / MOTOR_TRAVEL_SPEED / 100;
+  driveSeconds(time, direction);
 }
 
 void driveSeconds(int time, char direction) {
