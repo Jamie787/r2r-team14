@@ -10,8 +10,8 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define MOTOR_TRAVEL_SPEED 1
 #define MOTOR_ROTATION_SPEED 1
 #define MAZE_DISTANCE 42
-#define TURNING_DISTANCE 10 // to move 90 degrees (will have to test on the day)
-#define STAIR_DISTANCE 20 // (will have to test on the day)
+#define TURNING_DISTANCE 10 // TODO: test on the day
+#define STAIR_DISTANCE 20 // TODO: test on the day
 
 
 #define MAX_ARGS 16
@@ -19,20 +19,17 @@ const int MOTOR_CONTROL_SPEED = 100;
 #define MOVE_COMMAND "move" // moves certain distance
 #define ROTATE_COMMAND "rotate" // rotates by given angle
 #define DRIVE_COMMAND "drive" // drives in given direction until stopped
-#define STOP_COMMAND "stop" // stops motots
-
 #define SENSOR_COMMAND "sensor" // prints distance from all 3 sensors
-#define CLAMP_COMMAND "clamp"
-#define PIVOT_COMMAND "pivot"
-
-#define GRAB_COMMAND "grab"
-#define DROP_COMMAND "drop"
+#define CLAMP_COMMAND "clamp" // clamps object
+#define PIVOT_COMMAND "pivot" // moves claw up and down object
+#define STOP_COMMAND "s" // stops motors
 
 // Automation Constants
-#define SENSE_COMMAND "sense"
+#define SENSE_COMMAND "c"
 #define MAZE_COMMAND "maze"
 #define STAIRS_COMMAND "stairs"
-// TODO: add claw constant
+#define GRAB_COMMAND "grab"
+#define DROP_COMMAND "drop"
 
 #define checkCommand(command) strcmp(args[0], command) == 0
 
@@ -79,10 +76,28 @@ int currentServoAngle = 0;
 void setup() {
   Serial.begin(9600);
 
-  // TODO: Add pinMode() for all of the pins once they're finalised
   initialiseUltrasonic();
   initialiseMotors();
   initialiseServo();
+
+  Serial.println("Robot Control Menu:");
+  
+  Serial.println("Directions:");
+  Serial.println("f - forward");
+  Serial.println("b - backward");
+  Serial.println("r - right");
+  Serial.println("l - left");
+
+  Serial.println("\nCommands:");
+  Serial.println("drive [direction] - drives in given direction");
+  Serial.println("s - stops motors");
+  Serial.println("c - check surroundings");
+  Serial.println("maze - move through maze");
+  Serial.println("stairs - traverse up stairs");
+  Serial.println("grab - picks up object");
+  Serial.println("drop - drops object");
+
+  Serial.println("\nEnter a command:");
 }
 
 void loop() {
@@ -177,11 +192,12 @@ void loop() {
       traverseStairs();
     }
     else if (checkCommand(GRAB_COMMAND)) {
-      grab()
+      clawGrab();
     }
     else if (checkCommand(DROP_COMMAND)) {
-      drop()
+      clawDrop()
     }
+    
     // If the user provides an invalid command
     else {
       Serial.println("Invalid command");
@@ -244,9 +260,9 @@ void moveDistance(int distance) {
 }
 
 void checkUltrasonic() {
-  float leftDistance = findDistance(leftTrig, leftEcho);
-  float forwardDistance = findDistance(forwardTrig, forwardEcho);
-  float rightDistance = findDistance(rightTrig, rightEcho);
+  float leftDistance = findSensorDistance(leftTrig, leftEcho);
+  float forwardDistance = findSensorDistance(forwardTrig, forwardEcho);
+  float rightDistance = findSensorDistance(rightTrig, rightEcho);
 
   Serial.print("\t\tForward distance: ");
   Serial.println(forwardDistance);
@@ -258,7 +274,7 @@ void checkUltrasonic() {
   Serial.println(rightDistance);
 }
 
-float findDistance(int trigPin, int echoPin) {
+float findSensorDistance(int trigPin, int echoPin) {
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
@@ -346,6 +362,14 @@ void rotateAngle(int angle) {
   driveSeconds(time, direction);
 }
 
+void turnDirection(char direction) {
+  if (direction == 'l') {
+    rotateAngle(-90);
+  } else if (direction == 'r') {
+    rotateAngle(90);
+  }
+}
+
 void movePivotDistance(int distance) {
   if (distance < 0) {
     distance = 0;
@@ -369,15 +393,7 @@ void movePivotDistance(int distance) {
   }
 }
 
-void turnDirection(char direction) {
-  if (direction == 'l') {
-    rotateAngle(-90);
-  } else if (direction == 'r') {
-    rotateAngle(90);
-  }
-}
-
-void grab() {
+void clawGrab() {
   movePivotDistance(0);
 
   currentServoAngle = OUT_CLAW + 15;
@@ -386,7 +402,7 @@ void grab() {
   movePivotDistance(MAX_PIVOT_DISTANCE);
 }
 
-void drop() {
+void clawDrop() {
   movePivotDistance(0);
 
   currentServoAngle = 0;
