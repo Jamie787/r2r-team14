@@ -414,8 +414,8 @@ void help() {
     Serial.println("\tDirections:");
     Serial.println("\tf - forward");
     Serial.println("\tb - backward");
-    Serial.println("\tr - right");
     Serial.println("\tl - left");
+    Serial.println("\tr - right");
   Serial.println("stop - stops motors if they are enabled from drive");
 
   Serial.println("\nSensors:");
