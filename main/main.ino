@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////
 
 const int MOTOR_CONTROL_SPEED = 100;
-#define MOTOR_TRAVEL_SPEED 1
-#define MOTOR_ROTATION_SPEED 1
+#define MOTOR_TRAVEL_SPEED 1 // m/s
+#define MOTOR_ROTATION_SPEED 1 // m/s
 
 #define MAX_ARGS 16
 
@@ -19,8 +19,15 @@ const int MOTOR_CONTROL_SPEED = 100;
 
 #define SENSOR_COMMAND "sensor"
 #define CLAMP_COMMAND "clamp"
+#define PIVOT_COMMAND "pivot"
 
 #define checkCommand(command) strcmp(args[0], command) == 0
+
+const int IN_CLAW = 110;
+const int OUT_CLAW = 0;
+const int SERVO_STOP = 90;
+const int PIVOT_SPEED = 10; // m/s
+const int MAX_PIVOT_DISTANCE = 50; // TODO: figure out what are max is in mm
 
 ///////////////////////////////////////////////////
 // Globals and Pins
@@ -46,9 +53,10 @@ const int rightMotorPin2 = 11;
 const int clawServoPin = 9;
 Servo clawServo;
 
-// Not ceratain about this...
-// const int pivotServoPin = 3;
-// Servo pivotServo;
+const int pivotServoPin = 3;
+Servo pivotServo;
+
+int currentDistance = 0;
 
 ///////////////////////////////////////////////////
 // Functions
@@ -118,10 +126,24 @@ void loop() {
       halt();
     }
     else if (checkCommand(CLAMP_COMMAND)) {
-      // if (args[1] != nullptr) {
-      //   int angle = atoi(args[1]);
-      //   moveClaw(angle);
-      // }
+      if (args[1] != nullptr) {
+        if (*args[1] == 'O') {
+          
+        }
+      }
+    }
+    else if (checkCommand(PIVOT_COMMAND)) {
+      if (args[1] != nullptr) {
+        if (*args[1] == 'U') {
+          movePivotDistance(MAX_PIVOT_DISTANCE);
+        } else if (*args[1] == 'D') {
+          movePivotDistance(0);
+        } else if (strcmp(args[1], "LU") === 0) {
+          movePivotDistance(currentDistance + 10);
+        } else if (strcmp(args[1], "LD") === 0) {
+          movePivotDistance(currentDistance - 10);
+        }
+      }
     }
     // If the user provides an invalid command
     else {
@@ -154,11 +176,10 @@ void initialiseMotors() {
 
 void initialiseServo() {
   clawServo.attach(clawServoPin);
-  clawServo.write(0);
+  clawServo.write(IN_CLAW);
 
-  // TODO: Figure out the difference between 180 and 360
-  // pivotServo.attach(pivotServoPin);
-  // pivotServo.write(0);
+  pivotServo.attach(pivotServoPin);
+  pivotServo.write(SERVO_STOP);
   Serial.println("Servo Pins initialized");
 }
 
@@ -175,7 +196,7 @@ void moveDistance(int distance) {
     distance *= -1;
   }
 
-  int time = distance / MOTOR_TRAVEL_SPEED / 100;
+  int time = distance * 10 / MOTOR_TRAVEL_SPEED ;
   driveSeconds(time, direction);
 }
 
@@ -219,21 +240,9 @@ void readString(char *string) {
   string[i] = '\0';
 }
 
-void moveClaw(int angle) {
-  if (angle >= 0 && angle <= 180) {
-    Serial.print("Clamp at ");
-    Serial.print(angle);
-    Serial.println(" degrees");
-
-    clawServo.write(angle);
-  } else {
-    Serial.println("Invalid angle");
-  }
-}
-
 void driveSeconds(int time, char direction) {
   drive(direction);
-  delay(time * 1000);
+  delay(time);
   halt();
 }
 
@@ -283,7 +292,30 @@ void rotateAngle(int angle) {
     angle *= -1;
   }
 
-  int time = angle / MOTOR_ROTATION_SPEED;
+  int time = angle * 1000 / MOTOR_ROTATION_SPEED;
 
   driveSeconds(time, direction);
+}
+
+void movePivotDistance(int distance) {
+  if (distance < 0) {
+    distance = 0;
+  } else if (distance > MAX_PIVOT_DISTANCE) {
+    distance = MAX_PIVOT_DISTANCE;
+  }
+
+  int deltaDistance = distance - currentDistance;
+
+  int time = deltaDistance / PIVOT_SPEED;
+
+  if (time > 0) {
+    pivotServo.write(SERVO_STOP + 5 + PIVOT_SPEED);
+    delay(time);
+    pivotServo.write(SERVO_STOP);
+  } else if (time < 0) {
+    time *= -1;
+    pivotServo.write(SERVO_STOP - PIVOT_SPEED);
+    delay(time);
+    pivotServo.write(SERVO_STOP);
+  }
 }
