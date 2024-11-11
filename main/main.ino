@@ -6,7 +6,7 @@
 // Defines and Constants
 ///////////////////////////////////////////////////
 
-const int MOTOR_CONTROL_SPEED = 100;
+const int MOTOR_CONTROL_SPEED = 255;
 #define MOTOR_TRAVEL_SPEED 1
 #define MOTOR_ROTATION_SPEED 1
 
@@ -71,6 +71,8 @@ void loop() {
 
     // Read arguments
     char *args[MAX_ARGS];
+    memset(args, 0, sizeof(char *) * MAX_ARGS);
+
     args[0] = strtok(input, " ");
 
     for (int i = 1; (args[i] = strtok(nullptr, " ")) != nullptr; i++);
@@ -125,7 +127,7 @@ void loop() {
     }
     // If the user provides an invalid command
     else {
-      Serial.println("Invalid command");
+      Serial.print("Invalid command ");
       Serial.println(args[0]);
     }
   }
@@ -210,9 +212,10 @@ void readString(char *string) {
   int i;
   for (i = 0; Serial.available(); i++) {
     char c = Serial.read();
-    if (c != '\n') {
-      string[i]  = c;
-      i--;
+    if (c == '\n') {
+      string[i] = '\0';
+    } else {
+      string[i] = c;
     }
   }
 
