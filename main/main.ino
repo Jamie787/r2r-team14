@@ -40,7 +40,7 @@ const int MOTOR_CONTROL_SPEED = 255;
 
 const int IN_CLAW = 110;
 const int OUT_CLAW = 0;
-const int MAX_PIVOT_ANGLE = 165; 
+const int MAX_PIVOT_ANGLE = 150; 
 const int MIN_PIVOT_ANGLE = 90; 
 
 ///////////////////////////////////////////////////
@@ -150,7 +150,7 @@ void loop() {
         if (*args[1] == 'o') {
           currentServoAngle = OUT_CLAW;
         } else if (*args[1] == 'i') {
-          currentServoAngle = 0;
+          currentServoAngle = IN_CLAW;
         } else if (*args[1] == 't') {
           currentServoAngle += 10;
         } else if (*args[1] == 'l') {
