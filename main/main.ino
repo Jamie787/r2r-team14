@@ -20,7 +20,7 @@ const int MOTOR_CONTROL_SPEED = 255;
 #define TURN_COMMAND "turn" // turns a direction
 #define ROTATE_COMMAND "rotate" // rotates by given angle
 #define DRIVE_COMMAND "drive" // drives in given direction until stopped
-#define STOP_COMMAND "s" // stops motors
+#define STOP_COMMAND "stop" // stops motors
 
 #define SENSOR_COMMAND "sensor" // prints distance from all 3 sensors
 
@@ -40,9 +40,8 @@ const int MOTOR_CONTROL_SPEED = 255;
 
 const int IN_CLAW = 110;
 const int OUT_CLAW = 0;
-const int SERVO_STOP = 90;
-const int PIVOT_SPEED = 10; // m/s
-const int MAX_PIVOT_DISTANCE = 50; // TODO: figure out what are max is in mm
+const int MAX_PIVOT_ANGLE = 165; 
+const int MIN_PIVOT_ANGLE = 90; 
 
 ///////////////////////////////////////////////////
 // Globals and Pins
@@ -52,17 +51,17 @@ const int MAX_PIVOT_DISTANCE = 50; // TODO: figure out what are max is in mm
 const int leftTrig = 2;
 const int leftEcho = 4;
 
-const int forwardTrig = 0;
-const int forwardEcho = 1;
+const int forwardTrig = 12;
+const int forwardEcho = 13;
 
 const int rightTrig = 7;
 const int rightEcho = 8;
 
 // Motors
-const int leftMotorPin1 = 5;    
-const int leftMotorPin2 = 6;
-const int rightMotorPin1 = 10;    
-const int rightMotorPin2 = 11;  
+const int leftMotorPin1 = 11;    
+const int leftMotorPin2 = 10;
+const int rightMotorPin1 = 5;    
+const int rightMotorPin2 = 6;  
 
 // Servo
 const int clawServoPin = 9;
@@ -71,8 +70,8 @@ Servo clawServo;
 const int pivotServoPin = 3;
 Servo pivotServo;
 
-int currentDistance = 0;
-int currentServoAngle = 0;
+int currentPivotAngle = MIN_PIVOT_ANGLE;
+int currentServoAngle = IN_CLAW;
 
 ///////////////////////////////////////////////////
 // Functions
@@ -158,19 +157,19 @@ void loop() {
           currentServoAngle -= 10;
         }
 
-        clawServo.write(currentDistance);
+        clawServo.write(currentServoAngle);
       }
     }
     else if (checkCommand(PIVOT_COMMAND)) {
       if (args[1] != nullptr) {
         if (*args[1] == 'u') {
-          movePivotDistance(MAX_PIVOT_DISTANCE);
+          movePivotAngle(MAX_PIVOT_ANGLE);
         } else if (*args[1] == 'd') {
-          movePivotDistance(0);
+          movePivotAngle(0);
         } else if (strcmp(args[1], "lu") == 0) {
-          movePivotDistance(currentDistance + 10);
+          movePivotAngle(currentPivotAngle + 10);
         } else if (strcmp(args[1], "ld") == 0) {
-          movePivotDistance(currentDistance - 10);
+          movePivotAngle(currentPivotAngle - 10);
         }
       }
     } 
@@ -189,7 +188,9 @@ void loop() {
     else if (checkCommand(DROP_COMMAND)) {
       clawDrop();
     }
-    
+    else if (checkCommand(HELP_COMMAND)) {
+      help();
+    }
     // If the user provides an invalid command
     else {
       Serial.print("Invalid command ");
@@ -224,10 +225,10 @@ void initialiseMotors() {
 
 void initialiseServo() {
   clawServo.attach(clawServoPin);
-  clawServo.write(IN_CLAW);
+  clawServo.write(currentServoAngle);
 
   pivotServo.attach(pivotServoPin);
-  pivotServo.write(SERVO_STOP);
+  pivotServo.write(currentPivotAngle);
   Serial.println("Servo Pins initialized");
 }
 
@@ -363,40 +364,28 @@ void turnDirection(char direction) {
   }
 }
 
-void movePivotDistance(int distance) {
-  if (distance < 0) {
-    distance = 0;
-  } else if (distance > MAX_PIVOT_DISTANCE) {
-    distance = MAX_PIVOT_DISTANCE;
+void movePivotAngle(int angle) {
+  if (angle < MIN_PIVOT_ANGLE) {
+    angle = MIN_PIVOT_ANGLE;
+  } else if (angle > MAX_PIVOT_ANGLE) {
+    angle = MAX_PIVOT_ANGLE;
   }
 
-  int deltaDistance = distance - currentDistance;
-
-  int time = deltaDistance / PIVOT_SPEED;
-
-  if (time > 0) {
-    pivotServo.write(SERVO_STOP + 5 + PIVOT_SPEED);
-    delay(time);
-    pivotServo.write(SERVO_STOP);
-  } else if (time < 0) {
-    time *= -1;
-    pivotServo.write(SERVO_STOP - PIVOT_SPEED);
-    delay(time);
-    pivotServo.write(SERVO_STOP);
-  }
+  currentPivotAngle = angle;
+  pivotServo.write(angle);
 }
 
 void clawGrab() {
-  movePivotDistance(0);
+  movePivotAngle(MIN_PIVOT_ANGLE);
 
   currentServoAngle = OUT_CLAW + 15;
   clawServo.write(currentServoAngle);
 
-  movePivotDistance(MAX_PIVOT_DISTANCE);
+  movePivotAngle(MAX_PIVOT_ANGLE);
 }
 
 void clawDrop() {
-  movePivotDistance(0);
+  movePivotAngle(MIN_PIVOT_ANGLE);
 
   currentServoAngle = 0;
   clawServo.write(currentServoAngle);
