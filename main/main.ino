@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////
 
 const int MOTOR_CONTROL_SPEED = 255;
-#define MOTOR_TRAVEL_SPEED 1
-#define MOTOR_ROTATION_SPEED 1
-#define MAZE_DISTANCE 42
+#define MOTOR_TRAVEL_SPEED 0.024
+#define MOTOR_ROTATION_SPEED 10.98
+#define MAZE_DISTANCE 40
 #define TURNING_DISTANCE 10 // TODO: test on the day
 #define STAIR_DISTANCE 20 // TODO: test on the day
 
@@ -38,8 +38,8 @@ const int MOTOR_CONTROL_SPEED = 255;
 
 #define checkCommand(command) strcmp(args[0], command) == 0
 
-const int IN_CLAW = 110;
-const int OUT_CLAW = 0;
+const int IN_CLAW = 100;
+const int OUT_CLAW = 15;
 const int MAX_PIVOT_ANGLE = 150; 
 const int MIN_PIVOT_ANGLE = 90; 
 
@@ -90,6 +90,9 @@ void setup() {
 }
 
 void loop() {
+  // checkUltrasonic();
+  delay(500);
+
   if (Serial.available()) {
     char input[128];
     memset(input, '\0', 128);
@@ -241,14 +244,14 @@ void moveDistance(int distance) {
 
   if (distance >= 0) {
     direction = 'f';
-    Serial.print("Moving forward ");
+    Serial.println("Moving forward ");
   } else {
     direction = 'b';
     Serial.print("Moving backward ");
     distance *= -1;
   }
 
-  int time = distance * 10 / MOTOR_TRAVEL_SPEED ;
+  float time = distance * 10 / MOTOR_TRAVEL_SPEED ;
   driveSeconds(time, direction);
 }
 
@@ -341,6 +344,7 @@ void halt() {
 
 void rotateAngle(int angle) {
   char direction;
+  double time = 0;
 
   if (angle >= 0) {
     direction = 'r';
@@ -351,7 +355,7 @@ void rotateAngle(int angle) {
     angle *= -1;
   }
 
-  int time = angle * 1000 / MOTOR_ROTATION_SPEED;
+  time = angle / MOTOR_ROTATION_SPEED * 1000;
 
   driveSeconds(time, direction);
 }
@@ -378,7 +382,7 @@ void movePivotAngle(int angle) {
 void clawGrab() {
   movePivotAngle(MIN_PIVOT_ANGLE);
 
-  currentServoAngle = OUT_CLAW + 15;
+  currentServoAngle = OUT_CLAW;
   clawServo.write(currentServoAngle);
 
   movePivotAngle(MAX_PIVOT_ANGLE);
@@ -387,7 +391,7 @@ void clawGrab() {
 void clawDrop() {
   movePivotAngle(MIN_PIVOT_ANGLE);
 
-  currentServoAngle = 0;
+  currentServoAngle = IN_CLAW;
   clawServo.write(currentServoAngle);
 }
 

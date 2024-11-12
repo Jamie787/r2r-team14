@@ -2,20 +2,19 @@
 void moveThroughMaze() {
     // TODO: adjust depending on the maze
     moveDistance(MAZE_DISTANCE);
+    moveDistance(MAZE_DISTANCE);
     turnDirection('r');
+    moveDistance(MAZE_DISTANCE);
+    turnDirection('r');
+    moveDistance(MAZE_DISTANCE);
+
+    rotateAngle(-180);
+
     moveDistance(MAZE_DISTANCE);
     turnDirection('l');
     moveDistance(MAZE_DISTANCE);
-
-    // turn 180 degrees
-    turnDirection('r'); //moveRobotDistance(TURNING_DISTANCE, r);
-    turnDirection('r');
-
-    // TODO: go back through the maze
-    moveDistance(MAZE_DISTANCE);
-    turnDirection('r');
-    moveDistance(MAZE_DISTANCE);
     turnDirection('l');
+    moveDistance(MAZE_DISTANCE);
     moveDistance(MAZE_DISTANCE);
 };
 
